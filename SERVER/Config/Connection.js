@@ -1,21 +1,41 @@
-import { MongoClient } from 'mongodb'
-import * as dotenv from 'dotenv' 
-dotenv.config()
+import { MongoClient } from 'mongodb';
+import * as dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
-let db = null
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+let db = null;
 
 export default {
-    connect: (done) => {
-        const url = process.env.DB_URL
-        const dbname = process.env.DB_NAME
+    connect: (callback) => {
+        const url = process.env.DB_URL;
+        const dbname = process.env.DB_NAME;
 
-        MongoClient.connect(url, (err, data) => {
-            if (err) return done(err)
-            db = data.db(dbname)
-            done()
-        })
+        // Additional logging for debugging
+        console.log('Attempting to connect to MongoDB...');
+        console.log('Connection String:', url);
+        console.log('Database Name:', dbname);
+
+        MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => {
+            if (err) {
+                console.error('Failed to connect to the database. Error:', err);
+                return callback(err);
+            }
+            db = client.db(dbname);
+            console.log(`Connected to database: ${dbname}`);
+            callback(null, db);
+        });
     },
     get: () => {
-        return db
+        if (!db) {
+            throw new Error('Database not initialized. Call connect first.');
+        }
+        return db;
     }
-}
+};

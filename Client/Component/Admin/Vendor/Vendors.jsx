@@ -1,31 +1,29 @@
-import Loading from '@/Component/Loading/Loading'
-import ContentControl from '@/ContentControl/ContentControl'
-import { useRouter } from 'next/router'
-import { useContext, useState } from 'react'
-import { useEffect } from 'react'
-import { adminAxios } from '../../../Config/Server'
+import Loading from '@/Component/Loading/Loading';
+import ContentControl from '@/ContentControl/ContentControl';
+import { useRouter } from 'next/router';
+import { useContext, useState } from 'react';
+import { useEffect } from 'react';
+import { adminAxios } from '../../../Config/Server';
 
 function Vendors({ loaded, setLoaded }) {
 
-  const { setAdminLogged } = useContext(ContentControl)
-
-  const navigate = useRouter()
-
-  const [vendors, setVendors] = useState([])
-
-  const [total, setTotal] = useState(0)
-
-  const [accepted, setAccepted] = useState(true)
+  const { setAdminLogged } = useContext(ContentControl);
+  const navigate = useRouter();
+  const [vendors, setVendors] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [accepted, setAccepted] = useState(true);
 
   const logOut = () => {
-    setAdminLogged({ status: false })
-    localStorage.removeItem("adminToken")
-    setLoaded(true)
-    navigate.push('/admin/login')
-  }
+    setAdminLogged({ status: false });
+    localStorage.removeItem("adminToken");
+    setLoaded(true);
+    navigate.push('/admin/login');
+  };
 
   const getVendors = (type) => {
-    setLoaded(false)
+    setLoaded(false);
+    console.log("Fetching vendors with accept status: ", type);  // Debugging
+
     adminAxios((server) => {
       server.get('/admin/getVendors', {
         params: {
@@ -33,22 +31,26 @@ function Vendors({ loaded, setLoaded }) {
           skip: 0
         }
       }).then((res) => {
-        setLoaded(true)
+        setLoaded(true);
         if (res.data.login) {
-          logOut()
+          logOut();
         } else {
-          setVendors(res.data.vendors)
-          setTotal(res.data.total)
+          console.log("Vendors fetched: ", res.data.vendors);  // Debugging
+          setVendors(res.data.vendors);
+          setTotal(res.data.total);
         }
-      }).catch(() => {
-        setLoaded(true)
-        alert("Error")
-      })
-    })
-  }
+      }).catch((err) => {
+        setLoaded(true);
+        console.error("Error fetching vendors: ", err);  // Debugging
+        alert("Error");
+      });
+    });
+  };
+
   useEffect(() => {
-    getVendors(true)
-  }, [])
+    getVendors(true);
+  }, []);
+
   return (
     <>
       {
@@ -60,14 +62,14 @@ function Vendors({ loaded, setLoaded }) {
                 <div className="row">
                   <div className="col-12 col-md-4 pb-2">
                     <button onClick={() => {
-                      getVendors(true)
-                      setAccepted(true)
+                      getVendors(true);
+                      setAccepted(true);
                     }}>Accepted Vendors</button>
                   </div>
                   <div className="col-12 col-md-4 pb-2">
                     <button onClick={() => {
-                      getVendors(false)
-                      setAccepted(false)
+                      getVendors(false);
+                      setAccepted(false);
                     }}>Pending Vendors</button>
                   </div>
 
@@ -99,13 +101,15 @@ function Vendors({ loaded, setLoaded }) {
                             </td>
                             <td>
                               <button className='ActionBtn' onClick={() => {
-                                navigate.push(`/admin/vendor/details/${obj._id}`)
+                                navigate.push(`/admin/vendor/details/${obj._id}`);
                               }}>Details</button>
 
-                              {obj.accept ? <button className='ActionBtn' onClick={() => {
-                                navigate.push(`/admin/vendor/products/${obj._id}`)
-                              }}>Products</button>
-                                : <button className='ActionBtn' onClick={() => {
+                              {obj.accept ? (
+                                <button className='ActionBtn' onClick={() => {
+                                  navigate.push(`/admin/vendor/products/${obj._id}`);
+                                }}>Products</button>
+                              ) : (
+                                <button className='ActionBtn' onClick={() => {
                                   adminAxios((server) => {
                                     server.put('/admin/acceptVendor', {
                                       email: obj.email,
@@ -123,20 +127,21 @@ function Vendors({ loaded, setLoaded }) {
                                       }
                                     }).then((res) => {
                                       if (res.data.login) {
-                                        logOut()
+                                        logOut();
                                       } else {
-                                        alert("Done")
-                                        getVendors(false)
+                                        alert("Done");
+                                        getVendors(false);
                                       }
                                     }).catch(() => {
-                                      alert("Error")
-                                    })
-                                  })
-                                }}>Accept</button>}
+                                      alert("Error");
+                                    });
+                                  });
+                                }}>Accept</button>
+                              )}
 
-                              {
-                                obj.accept ? <button className='ActionBtn' onClick={() => {
-                                  if (window.confirm(`Do you want delete vendor ${obj.adharName}`)) {
+                              {obj.accept ? (
+                                <button className='ActionBtn' onClick={() => {
+                                  if (window.confirm(`Do you want delete vendor ${obj.adharName}?`)) {
                                     adminAxios((server) => {
                                       server.delete('/admin/deleteVendor', {
                                         data: {
@@ -145,41 +150,43 @@ function Vendors({ loaded, setLoaded }) {
                                         }
                                       }).then((res) => {
                                         if (res.data.login) {
-                                          logOut()
+                                          logOut();
                                         } else {
-                                          alert("Done")
-                                          getVendors(true)
+                                          alert("Done");
+                                          getVendors(true);
                                         }
                                       }).catch(() => {
-                                        alert("Error")
-                                      })
-                                    })
-                                  }
-                                }}>Delete</button> : <button className='ActionBtn' onClick={() => {
-                                  if (window.confirm(`Do you want delete vendor ${obj.adharName}`)) {
-                                    adminAxios((server) => {
-                                      server.delete('/admin/deleteVendor', {
-                                        data: {
-                                          email: obj.email,
-                                          vendorId: obj._id
-                                        }
-                                      }).then((res) => {
-                                        if (res.data.login) {
-                                          logOut()
-                                        } else {
-                                          alert("Done")
-                                          getVendors(false)
-                                        }
-                                      }).catch(() => {
-                                        alert("Error")
-                                      })
-                                    })
+                                        alert("Error");
+                                      });
+                                    });
                                   }
                                 }}>Delete</button>
-                              }
+                              ) : (
+                                <button className='ActionBtn' onClick={() => {
+                                  if (window.confirm(`Do you want delete vendor ${obj.adharName}?`)) {
+                                    adminAxios((server) => {
+                                      server.delete('/admin/deleteVendor', {
+                                        data: {
+                                          email: obj.email,
+                                          vendorId: obj._id
+                                        }
+                                      }).then((res) => {
+                                        if (res.data.login) {
+                                          logOut();
+                                        } else {
+                                          alert("Done");
+                                          getVendors(false);
+                                        }
+                                      }).catch(() => {
+                                        alert("Error");
+                                      });
+                                    });
+                                  }
+                                }}>Delete</button>
+                              )}
                             </td>
                           </tr>
-                        )
+                        );
                       })
                     }
                   </tbody>
@@ -187,53 +194,55 @@ function Vendors({ loaded, setLoaded }) {
               </div>
 
               {
-                vendors.length !== total && <div>
-                  <button data-for="loadMore" onClick={() => {
-                    if (accepted) {
-                      setLoaded(false)
-                      adminAxios((server) => {
-                        server.get('/admin/getVendors', {
-                          params: {
-                            accept: true,
-                            skip: vendors.length
-                          }
-                        }).then((res) => {
-                          if (res.data.login) {
-                            logOut()
-                          } else {
-                            setTotal(res.data.total)
-                            setVendors([...vendors, ...res.data.vendors])
-                            setLoaded(true)
-                          }
-                        }).catch(() => {
-                          alert("Error")
-                          setLoaded(true)
-                        })
-                      })
-                    } else {
-                      setLoaded(false)
-                      adminAxios((server) => {
-                        server.get('/admin/getVendors', {
-                          params: {
-                            accept: false,
-                            skip: vendors.length
-                          }
-                        }).then((res) => {
-                          if (res.data.login) {
-                            logOut()
-                          } else {
-                            setTotal(res.data.total)
-                            setVendors([...vendors, ...res.data.vendors])
-                            setLoaded(true)
-                          }
-                        }).catch(() => {
-                          alert("Error")
-                          setLoaded(true)
-                        })
-                      })
-                    }
-                  }}>Load More</button>
-                </div>
+                vendors.length !== total && (
+                  <div>
+                    <button data-for="loadMore" onClick={() => {
+                      if (accepted) {
+                        setLoaded(false);
+                        adminAxios((server) => {
+                          server.get('/admin/getVendors', {
+                            params: {
+                              accept: true,
+                              skip: vendors.length
+                            }
+                          }).then((res) => {
+                            if (res.data.login) {
+                              logOut();
+                            } else {
+                              setTotal(res.data.total);
+                              setVendors([...vendors, ...res.data.vendors]);
+                              setLoaded(true);
+                            }
+                          }).catch(() => {
+                            alert("Error");
+                            setLoaded(true);
+                          });
+                        });
+                      } else {
+                        setLoaded(false);
+                        adminAxios((server) => {
+                          server.get('/admin/getVendors', {
+                            params: {
+                              accept: false,
+                              skip: vendors.length
+                            }
+                          }).then((res) => {
+                            if (res.data.login) {
+                              logOut();
+                            } else {
+                              setTotal(res.data.total);
+                              setVendors([...vendors, ...res.data.vendors]);
+                              setLoaded(true);
+                            }
+                          }).catch(() => {
+                            alert("Error");
+                            setLoaded(true);
+                          });
+                        });
+                      }
+                    }}>Load More</button>
+                  </div>
+                )
               }
 
             </div>
@@ -241,7 +250,7 @@ function Vendors({ loaded, setLoaded }) {
         ) : <Loading />
       }
     </>
-  )
+  );
 }
 
-export default Vendors
+export default Vendors;

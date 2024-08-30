@@ -99,7 +99,7 @@ function Header() {
                             <div className="row">
                                 <div className="col-3 pt-2">
                                     <Link className='LinkTagNonDec' href="/">
-                                        <h5 className='UserGreenMain'>E Fish</h5>
+                                        <h5 className='UserGreenMain'>WEALTH-TRUST</h5>
                                     </Link>
                                 </div>
                                 <div className="col-5">
@@ -344,7 +344,7 @@ function Header() {
                                 </div>
                                 <div className="col-6">
                                     <Link className='LinkTagNonDec' href="/">
-                                        <h3 className="UserGreenMain text-center">E Fish</h3>
+                                        <h3 className="UserGreenMain text-center">WEALTH-TRUST</h3>
                                     </Link>
                                 </div>
                                 <div className='col-3 text-end'>
