@@ -6,6 +6,7 @@ var instance = new Razorpay({
     key_secret: process.env.RAZORPAY_SECREt
 })
 
+
 export default instance
 
 export const paymentVery = (razorpayRes) => {
